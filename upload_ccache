@@ -8,7 +8,7 @@ tg () {
 	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
 }
 
-case "$1" in
+case "$2" in
 		 temp)
 		 echo "Using temps.sh for upload"
 		 up () {
