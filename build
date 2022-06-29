@@ -1,0 +1,90 @@
+#!/bin/bash
+cd /tmp/rom
+
+# Normal build steps
+. build/envsetup.sh
+lunch xdroid_lavender-userdebug
+export _JAVA_OPTIONS="-Xmx12g"
+if [ -d "/tmp/ci" ]; then
+export CCACHE_DIR=/tmp/ccache
+export CCACHE_EXEC=$(which ccache)
+export USE_CCACHE=1
+ccache -M 20G
+ccache -o compression=true
+ccache -z
+else
+apt remove ccache
+fi
+
+# upload function for uploading rom zip file
+case "$2" in
+		 temp)
+		 echo "Using temps.sh for upload"
+		 up () {
+			curl --retry 18 --upload-file $1 temp.sh
+			# 3d, 4000mb limit
+			}
+		 ;;
+		 gh)
+		 echo "Using gh for upload"
+		 repo_link=https://github.com/reiyuura/ci-build  # repo link to upload rom zip
+		 echo $gh_token > mytoken.txt # login in github
+		 gh auth login --with-token < mytoken.txt
+		 gh release create $rom --generate-notes --repo $repo_link # create a release tag
+		 up () {
+			gh release upload --clobber $rom $1 --repo $repo_link
+			echo "Link: $repo_link/releases/download/$rom/$1"
+			}
+esac
+
+tg () {
+	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
+}
+
+# compile plox
+case "$1" in
+	full)
+		tg "Building ROM...!"
+		SECONDS=0
+		make bacon -j$(nproc --all)
+	;;
+	system)
+		tg "Building system.img to collect some ccache!"
+		SECONDS=0
+		make systemimage -j$(nproc --all) &
+		sleep 85m
+		tg "Stopping system.img & preparing for ccache upload!"
+		kill %1
+	;;
+	vendor)
+		tg "Building vendor.img to collect some ccache!"
+		SECONDS=0
+		make vendorimage -j$(nproc --all)
+esac
+
+# Upload rom zip file if succeed to build! Send notification to tg! And send shell to tg if build fails!
+case "$1" in
+	full)
+		if [ -e out/target/product/*/*2022*zip ]; then
+		send_zip=$(up out/target/product/*/*2022*zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
+		$send_zip"
+		fi
+	;;
+	system)
+		if [ -e out/target/product/*/system.img ]; then
+		mv out/target/product/*/system.img out/target/product/*/boot.img ./
+		7za a -tzip -mx=7 system_boot.zip *.img
+		send_zip=$(up system_boot.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec
+		$send_zip"
+		fi
+	;;
+	vendor)
+		if [ -e out/target/product/*/vendor.img ]; then
+		mv out/target/product/*/vendor.img ./
+		7za a -tzip -mx=7 vendor.zip *.img
+		send_zip=$(up vendor.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
+		$send_zip"
+		fi
+esac
+
+ccache -s # Let's print ccache statistics finally
