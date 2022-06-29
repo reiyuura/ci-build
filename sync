@@ -17,7 +17,7 @@ git config --global user.email "yuiireichi@gmail.com"
 repo init -u https://github.com/xdroid-oss/xd_manifest -b twelve -g default,-mips,-darwin,-notdefault
 
 # Local manifest
-git clone https://github.com/reiyuura/local_manifest --depth=1 -b master .repo/local_manifest
+git clone https://github.com/reiyuura/local_manifest --depth=1 -b twelve-xdroid .repo/local_manifest
 
 # Sync source with -q, no need unnecessary messages, you can remove -q if want! try with -j30 first, if fails, it will try again with -j8
 repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all) || repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all)
