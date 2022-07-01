@@ -3,7 +3,7 @@ cd /tmp/rom
 
 # Normal build steps
 . build/envsetup.sh
-lunch xdroid_vince-userdebug
+lunch xdroid_msm8953-userdebug
 export _JAVA_OPTIONS="-Xmx10g"
 if [ -d "/tmp/ci" ]; then
 export CCACHE_DIR=/tmp/ccache
