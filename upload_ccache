@@ -8,7 +8,7 @@ tg () {
 	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
 }
 
-case "$2" in
+case "$1" in
 		 temp)
 		 echo "Using temps.sh for upload"
 		 up () {
@@ -39,7 +39,9 @@ com ()
 }
 
 # disable ccache upload if rom compilation was successful
-if [ ! -e rom/out/target/product/*/*2022*zip ]; then
+rom_zip=`ls /tmp/rom/out/target/product/*/*.zip`
+if [ -z $rom_zip ]; then
+
 echo "|| Compressing CCACHE ||"
 
 # First compress in with pigz in a single zip.
