@@ -3,7 +3,7 @@ cd /tmp/rom
 
 # Normal build steps
 . build/envsetup.sh
-lunch xdroid_msm8953-userdebug
+lunch xdroid_vince-userdebug
 export _JAVA_OPTIONS="-Xmx10g"
 if [ -d "/tmp/ci" ]; then
 export CCACHE_DIR=/tmp/ccache
@@ -47,19 +47,19 @@ case "$1" in
 		tg "Building ROM...!"
 		SECONDS=0
 		make xd -j$(nproc --all)
-	;;
-	system)
-		tg "Building system.img to collect some ccache!"
-		SECONDS=0
-		make systemimage -j$(nproc --all) &
-		sleep 85m
-		tg "Stopping system.img & preparing for ccache upload!"
-		kill %1
-	;;
-	vendor)
-		tg "Building vendor.img to collect some ccache!"
-		SECONDS=0
-		make vendorimage -j$(nproc --all)
+	# ;;
+	# system)
+	# 	tg "Building system.img to collect some ccache!"
+	# 	SECONDS=0
+	# 	make systemimage -j$(nproc --all) &
+	# 	sleep 85m
+	# 	tg "Stopping system.img & preparing for ccache upload!"
+	# 	kill %1
+	# ;;
+	# vendor)
+	# 	tg "Building vendor.img to collect some ccache!"
+	# 	SECONDS=0
+	# 	make vendorimage -j$(nproc --all)
 esac
 
 # Upload rom zip file if succeed to build! Send notification to tg! And send shell to tg if build fails!
@@ -69,22 +69,22 @@ case "$1" in
 		send_zip=$(up out/target/product/*/*2022*zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
 		$send_zip"
 		fi
-	;;
-	system)
-		if [ -e out/target/product/*/system.img ]; then
-		mv out/target/product/*/system.img out/target/product/*/boot.img ./
-		7za a -tzip -mx=7 system_boot.zip *.img
-		send_zip=$(up system_boot.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec
-		$send_zip"
-		fi
-	;;
-	vendor)
-		if [ -e out/target/product/*/vendor.img ]; then
-		mv out/target/product/*/vendor.img ./
-		7za a -tzip -mx=7 vendor.zip *.img
-		send_zip=$(up vendor.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
-		$send_zip"
-		fi
+	# ;;
+	# system)
+	# 	if [ -e out/target/product/*/system.img ]; then
+	# 	mv out/target/product/*/system.img out/target/product/*/boot.img ./
+	# 	7za a -tzip -mx=7 system_boot.zip *.img
+	# 	send_zip=$(up system_boot.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec
+	# 	$send_zip"
+	# 	fi
+	# ;;
+	# vendor)
+	# 	if [ -e out/target/product/*/vendor.img ]; then
+	# 	mv out/target/product/*/vendor.img ./
+	# 	7za a -tzip -mx=7 vendor.zip *.img
+	# 	send_zip=$(up vendor.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
+	# 	$send_zip"
+	# 	fi
 esac
 
 ccache -s # Let's print ccache statistics finally
