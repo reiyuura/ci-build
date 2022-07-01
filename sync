@@ -17,15 +17,15 @@ git config --global user.email "yuiireichi@gmail.com"
 repo init -u https://github.com/xdroid-oss/xd_manifest -b twelve -g default,-mips,-darwin,-notdefault
 
 # Local manifest
-git clone https://github.com/reiyuura/local_manifest --depth=1 -b xdroid .repo/local_manifest
+# git clone https://github.com/reiyuura/local_manifest --depth=1 -b xdroid .repo/local_manifest
 
 # Sync source with -q, no need unnecessary messages, you can remove -q if want! try with -j30 first, if fails, it will try again with -j8
 repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all)
 
 # Clone local manifest! So that no need to manually git clone repos or change hals, you can use normal git clone or rm and re clone, they will cost little more time, and you may get timeout! Let's make it quit and depth=1 too.
-#git clone https://github.com/ImSpiDy/device_xiaomi_lavender -b 10 device/xiaomi/lavender
-#git clone --depth=1 https://github.com/ImSpiDy/vendor_xiaomi_lavender -b 10 vendor/xiaomi/lavender
-#git clone --depth=1 https://github.com/stormbreaker-project/kernel_xiaomi_lavender -b oldcam-hmp kernel/xiaomi/lavender
-#git clone -b master --depth=1 https://github.com/kdrag0n/proton-clang.git prebuilts/clang/host/linux-x86/clang-proton
+git clone https://github.com/reiyuura/android_device_xiaomi_vince -b master device/xiaomi/vince
+git clone --depth=1 https://github.com/reiyuura/android_vendor_xiaomi_vince -b master vendor/xiaomi/vince
+git clone --depth=1 https://github.com/GhostMaster69-dev/android_kernel_xiaomi_vince -b 12 kernel/xiaomi/vince
+git clone -b master --depth=1 https://gitlab.com/GhostMaster69-dev/cosmic-clang prebuilts/clang/host/linux-x86/clang-cosmic
 
 tg "Cloned all Sources Successfully! Time Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec "
