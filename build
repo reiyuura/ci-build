@@ -3,7 +3,8 @@ cd /tmp/rom
 
 # Normal build steps
 . build/envsetup.sh
-lunch xdroid_vince-userdebug
+export SELINUX_IGNORE_NEVERALLOWS=true
+lunch ssos_vince-userdebug
 export _JAVA_OPTIONS="-Xmx10g"
 if [ -d "/tmp/ci" ]; then
 export CCACHE_DIR=/tmp/ccache
@@ -33,7 +34,7 @@ case "$2" in
 		 gh release create $rom --generate-notes --repo $repo_link # create a release tag
 		 up () {
 			gh release upload --clobber $rom $1 --repo $repo_link
-			echo "Link: $repo_link/releases/download/$rom/$1"
+			echo "Link: $repo_link/releases/tag/$rom"
 			}
 esac
 
@@ -46,7 +47,10 @@ case "$1" in
 	full)
 		tg "Building ROM...!"
 		SECONDS=0
-		make xd -j$(nproc --all)
+		make bacon -j$(nproc --all)
+        if [ ! -e out/target/product/*/*2022*.zip ]; then # you don't have to run this you're not facing oom kill issue while build is about 98-98%
+	        make bacon -j$(nproc --all) # re-run the build cuz there's still time left considering only few targets left
+        fi		
 	;;
 	system)
 		tg "Building system.img to collect some ccache!"
