@@ -1,11 +1,11 @@
-env:
-    CIRRUS_CLONE_DEPTH: 1
-    CIRRUS_WORKING_DIR: "/tmp/ci"
+env: # Environment variables to pass to all tasks
+    CIRRUS_CLONE_DEPTH: 1 # No need to clone with the whole history
+    CIRRUS_WORKING_DIR: "/tmp/ci" # Where to clone the aosp-builder repo
     gh_token: "ENCRYPTED[!7fa4753f6473c3522c415d5b062d0dcd31ed86ec248737436fbf3464e9bc086e4343901167e630fb3389857ecc2bd942!]"
     bot_api: "ENCRYPTED[!1c09f593c42a7116bef7541ae720b7c7457b236b90ba1b1e24d61562b33e62d2eceaa79fd29047c4224f11100fd3916f!]"
     chat_id: "ENCRYPTED[!6bb787935a6475830031692950e1d0b711de764df4289ce2dc9c13a0e37a5b1267bfa37ca71e009f19f9fff49b83b539!]"
-    rom: "xdroid"
-  
+    gitlab_token: "ENCRYPTED[!3466f648024507c48466c0ac808b3b6c09e1f494bbf727313a7db52525b64314d3f215bd8ddd9c6e78b9248142593df0!]"
+
 task:
     name: aosp
     timeout_in: 260m
@@ -18,6 +18,6 @@ task:
     sync_script:
       - bash sync
     build_script:
-      - bash build system gh
+      - bash build
     upload_ccache_script: # Upload ccache to cloud foreground
-      - bash upload_ccache gh # Ccache uploading script
+      - bash upload_ccache # Ccache uploading script

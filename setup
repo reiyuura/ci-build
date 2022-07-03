@@ -1,0 +1,44 @@
+# Let's Setup 
+
+# enter your github username
+username=reiyuura
+
+# enter your github gmail
+gmail=yuiirechi@gmail.com
+
+# enter tag for gh release
+rom=nusa
+
+# rom manifest link & branch
+android_manifest="https://github.com/xdroid-oss/xd_manifest.git -b twelve"
+
+# enter your device codename
+device=vince
+
+# lunch & build type
+lunch="xdroid_vince-userdebug"
+
+# final build
+compile_plox="make xd -j$(nproc --all)"
+
+# clone local manifest!
+local_manifest="git clone --depth=1 https://github.com/reiyuura/android_device_xiaomi_vince -b xd-test device/xiaomi/vince
+git clone --depth=1 https://github.com/reiyuura/android_vendor_xiaomi_vince -b xd-test vendor/xiaomi/vince
+git clone --depth=1 https://github.com/GhostMaster69-dev/android_kernel_xiaomi_vince -b 12 kernel/xiaomi/vince"
+git clone --depth=1 https://gitlab.com/GhostMaster69-dev/cosmic-clang -b master /prebuilts/clang/host/linux-x86/clang-cosmic
+
+# enter repo link to upload rom zip
+upload_rom=https://github.com/reiyuura/android_device_xiaomi_vince
+
+# enter your gitlab username
+lab_username=reiyuura
+
+#enter your gitlab repo name in which you wanna store ccache
+lab_reponame=cirrus-cache
+
+# don't edit this 
+gitlab_repo=https://gitlab.com/$lab_username/$lab_reponame.git
+github_repo="https://$CIRRUS_REPO_OWNER:$gh_token@github.com/$CIRRUS_REPO_FULL_NAME -b $CIRRUS_DEFAULT_BRANCH"
+status=https://cirrus-ci.com/build/$CIRRUS_BUILD_ID
+
+# done 

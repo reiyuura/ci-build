@@ -2,39 +2,30 @@
 # Lets see machine specifications and environments
 df -h
 free -h
+nproc
+cat /etc/os*
+env
 
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-apt update && apt install wget pigz gh
+# include function script
+. /tmp/ci/function
+
+install_apt
+
+SECONDS=0
 
 cd /tmp # Where to download cccahe
 
-tg () {
-	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
-}
-tg "Build started! 
-https://cirrus-ci.com/build/$CIRRUS_BUILD_ID"
-
-repo_link=https://github.com/reiyuura/ci-build  # repo link to upload rom zip
-echo $gh_token > mytoken.txt # login in github
-gh auth login --with-token < mytoken.txt
-
-echo "|| Downloading CCACHE ||"
-SECONDS=0
-#gh release download ${rom}_ccache -p "*zip.0*" --repo https://github.com/reiyuura/ci-build
-
-#time wget https://polished-disk-a3d6.shubhamxd.workers.dev/0:/los-fork_ccache_backup.zip.003
-
-tg "Successfully Downloaded CCACHE! Time Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec "
-
+# Download ccahe
+download_ccache
+tg "Cache was Downloaded Successfully!
+Time Took: $(($SECONDS / 60)) minute(s) and $(($SECONDS % 60)) second(s).
+Status: $status | Build No: $build_no"
 
 # Extract ccache so ci can use it
 echo " Extracting CCACHE "
-if [ -e *.zip.001 ]; then
+if [ -e $rom/*.zip.* ]; then
+mv $rom/*.zip.* /tmp
 7za x *.zip.001
-fi
-if [ -e *.tar.gz ]; then
 time tar xf *.tar.gz
 fi
 

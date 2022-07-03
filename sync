@@ -3,27 +3,24 @@
 mkdir -p /tmp/rom # Where to sync source
 cd /tmp/rom
 
-tg () {
-	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
-}
+#include function script
+. /tmp/ci/function
+
+# set your gmail and email
+git config --global user.name "$username"
+git config --global user.email "$gmail"
+
 SECONDS=0
 
-##some of my work
-git config --global user.name "reiyuura"
-git config --global user.email "yuiireichi@gmail.com"
+# Sync with repo init command, -device,-mips,-darwin,-notdefault to save time and storage
+repo init --depth=1 --no-repo-verify -u $android_manifest -g default,-mips,-darwin,-notdefault
 
-# Repo init command, that -device,-mips,-darwin,-notdefault part will save you more time and storage to sync, add more according to your rom and choice. Optimization is welcomed! Let's make it quit, and with depth=1 so that no unnecessary things.
-repo init --depth=1 --no-repo-verify -u https://github.com/xdroid-oss/xd_manifest.git -b twelve -g default,-mips,-darwin,-notdefault
-
-# Local manifest
-#git clone https://github.com/reiyuura/local_manifest.git --depth 1 -b superior .repo/local_manifests
-
-# Sync source with -q, no need unnecessary messages, you can remove -q if want! try with -j30 first, if fails, it will try again with -j8
+# Sync source without unnecessary messages, try with -j30 first, if fails, it will try again
 repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all) || repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all)
 
-# Clone local manifest! So that no need to manually git clone repos or change hals, you can use normal git clone or rm and re clone, they will cost little more time, and you may get timeout! Let's make it quit and depth=1 too.
-git clone --depth=1 -b xd-test https://github.com/reiyuura/android_device_xiaomi_vince device/xiaomi/vince
-git clone --depth=1 -b xd-test https://github.com/reiyuura/android_vendor_xiaomi_vince vendor/xiaomi/vince
-git clone --depth=1 -b 12 https://github.com/GhostMaster69-dev/android_kernel_xiaomi_vince kernel/xiaomi/vince
+# Clone local manifest!
+bash -c "$local_manifest"
 
-tg "Cloned all Sources Successfully! Time Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec "
+tg "Cloned all Sources Successfully!
+Time Took: $(($SECONDS / 60)) minute(s) and $(($SECONDS % 60)) second(s).
+Status: $status | Build No: $build_no"

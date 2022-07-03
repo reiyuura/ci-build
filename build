@@ -1,78 +1,31 @@
 #!/bin/bash
-cd /tmp/rom
+cd /tmp/rom # Depends on where source got synced
+
+#include function script
+. /tmp/ci/function
+
+SECONDS=0
 
 # Normal build steps
 . build/envsetup.sh
-export SELINUX_IGNORE_NEVERALLOWS=true
-lunch xdroid_vince-userdebug
+lunch $lunch
 export _JAVA_OPTIONS="-Xmx10g"
-if [ -d "/tmp/ci" ]; then
 export CCACHE_DIR=/tmp/ccache
 export CCACHE_EXEC=$(which ccache)
 export USE_CCACHE=1
-ccache -M 20G
+ccache -M 15G
 ccache -o compression=true
 ccache -z
-else
-apt remove ccache
-fi
-
-# upload function for uploading rom zip file
-case "$2" in
-		 temp)
-		 echo "Using temps.sh for upload"
-		 up () {
-			curl --retry 18 --upload-file $1 temp.sh
-			# 3d, 4000mb limit
-			}
-		 ;;
-		 gh)
-		 echo "Using gh for upload"
-		 repo_link=https://github.com/reiyuura/ci-build  # repo link to upload rom zip
-		 echo $gh_token > mytoken.txt # login in github
-		 gh auth login --with-token < mytoken.txt
-		 gh release create $rom --generate-notes --repo $repo_link # create a release tag
-		 up () {
-			gh release upload --clobber $rom $1 --repo $repo_link
-			echo "Link: $repo_link/releases/tag/$rom"
-			}
-esac
-
-tg () {
-	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
-}
 
 # compile plox
-case "$1" in
-	full)
-		tg "Building ROM...!"
-		SECONDS=0
-		make bacon -j$(nproc --all)
-        if [ ! -e out/target/product/*/*2022*.zip ]; then # you don't have to run this you're not facing oom kill issue while build is about 98-98%
-	        make bacon -j$(nproc --all) # re-run the build cuz there's still time left considering only few targets left
-        fi		
-	;;
-	system)
-		tg "Building system.img to collect some ccache!"
-		SECONDS=0
-		make systemimage -j$(nproc --all) &
-		sleep 85m
-		tg "Stopping system.img & preparing for ccache upload!"
-		kill %1
-	;;
-	vendor)
-		tg "Building vendor.img to collect some ccache!"
-		SECONDS=0
-		make vendorimage -j$(nproc --all)
-esac
+bash -c $compile_plox &
+sleep 75m
+tg "Stop Compiling Rom To Collect Cache
+Status: $status | Build No: $build_no"
+kill %1
 
-# Upload rom zip file if succeed to build! Send notification to tg! And send shell to tg if build fails!
-if [ -e *.zip ]; then
-  send_zip=$(up *.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
-  $send_zip"
-elif [ -e out/target/product/*/*2022*.zip ]; then
-  send_zip=$(up out/target/product/*/*2022*.zip) && tg "Build Succeed! Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec.
-  $send_zip"
+if [ ! -e out/target/product/$device/*$device*2022*zip ]; then
+send_zip=$(up out/target/product/$device/*$device*2022*zip) && tg $id "Build Succeed!
+$send_zip"
 fi
-
 ccache -s # Let's print ccache statistics finally

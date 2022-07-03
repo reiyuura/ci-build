@@ -2,66 +2,44 @@
 
 cd /tmp
 
-if [ -d /tmp/ccache ]; then
-
-tg () {
-	curl -s "https://api.telegram.org/bot${bot_api}/sendmessage" --data "text=$1&chat_id=${chat_id}"
-}
-
-case "$1" in
-		 temp)
-		 echo "Using temps.sh for upload"
-		 up () {
-  		if [ -e $1 ]; then
-			curl --retry 18 --upload-file $1 temp.sh
-			# 3d, 4000mb limit
-  		fi
-			}
-		 ;;
-		 gh)
-		 echo "Using gh for upload"
-		 repo_link=https://github.com/reiyuura/ci-build  # repo link to upload rom zip
-		 echo $gh_token > mytoken.txt # login in github
-		 gh auth login --with-token < mytoken.txt
-		 gh release create ${rom}_ccache --generate-notes --repo $repo_link # create a release tag
-		 up () {
-  		if [ -e $1 ]; then
-			gh release upload --clobber ${rom}_ccache $1 --repo $repo_link
-			echo "Link: $repo_link/releases/download/${rom}_ccache/$1"
-  		fi
-			}
-esac
-
-# Compress function with pigz for faster compression
-com ()
-{
-    tar --use-compress-program="pigz -k -$2 " -cf $1.tar.gz $1
-}
+#include function script
+. /tmp/ci/function
 
 # disable ccache upload if rom compilation was successful
-rom_zip=`ls /tmp/rom/out/target/product/*/*.zip`
-if [ -z $rom_zip ]; then
-
-echo "|| Compressing CCACHE ||"
+if [ ! -e out/target/product/$device/*$device*2022*zip ]; then
 
 # First compress in with pigz in a single zip.
 time com ccache 1 # Compression level 1, its enough
 
-# Now split into parts (under 2gb to avoid issues with gh release)
-7za a -tzip -v1980m -mx=0 ${rom}_ccache_backup.zip ccache.tar.gz
+# Now split into parts.
+7za a -tzip -v2048m -mx=0 ${rom}_ccache_backup.zip ccache.tar.gz
 
-# upload all parts
+# Move all parts to our gitlab ccache_repo of for pushing
+mv *.zip.001 /tmp/$rom
+
 echo "|| Uploading CCACHE ||"
-for i in ${rom}_ccache_backup.zip.*; do
-	send_zip=$(up $i) && tg "CCACHE Uploaded!
-	$send_zip"
-done
+SECONDS=0
+cd /tmp/$rom
+upload_ccache
+tg "Cache was Uploaded Successfully!
+Time Took: $(($SECONDS / 60)) minute(s) and $(($SECONDS % 60)) second(s).
+Status: $status | Build No: $build_no"
 
-sleep 5
-echo "|| Uploaded ||"
-fi
+# lets compile again as rom isn't ready yet
+git clone $github_repo $rom && cd $rom
+git commit -sm "SH*T, HERE WE GO AGAIN $new_build_no
+* Empty Commit To Re-Start The Build" --allow-empty
+git push -f
+tg "Started New Build as Rom isn't Compiled
+Status: https://cirrus-ci.com | Build No: $new_build_no"
+
+else
+
+git clone $github_repo $rom && cd $rom
+git reset --hard HEAD~$build_no
+git push # new change made by you will get removed if force pushed so let's just reset when commits are empty
+
 fi
 
-echo "|| Clean storage ||"
-rm -rf /tmp/rom
-echo "|| Done ||"
+# clean storage
+rm -rf /tmp/*
