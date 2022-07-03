@@ -25,5 +25,6 @@ repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync 
 git clone --depth=1 -b xd-test https://github.com/reiyuura/android_device_xiaomi_vince device/xiaomi/vince
 git clone --depth=1 -b xd-test https://github.com/reiyuura/android_vendor_xiaomi_vince vendor/xiaomi/vince
 git clone --depth=1 -b 12 https://github.com/GhostMaster69-dev/android_kernel_xiaomi_vince kernel/xiaomi/vince
+git clone --depth=1 -b master https://gitlab.com/GhostMaster69-dev/cosmic-clang prebuilts/clang/host/linux-x86/clang-cosmic
 
 tg "Cloned all Sources Successfully! Time Took: $(($SECONDS / 60))min and $(($SECONDS % 60))sec "
