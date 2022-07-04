@@ -28,7 +28,7 @@ git clone --depth=1 https://github.com/GhostMaster69-dev/android_kernel_xiaomi_v
 git clone --depth=1 https://gitlab.com/GhostMaster69-dev/cosmic-clang -b master /prebuilts/clang/host/linux-x86/clang-cosmic
 
 # enter repo link to upload rom zip
-upload_rom=https://github.com/reiyuura/android_device_xiaomi_vince
+upload_rom=https://github.com/reiyuura/ci-build
 
 # enter your gitlab username
 lab_username=reiyuura
