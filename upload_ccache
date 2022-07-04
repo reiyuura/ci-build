@@ -15,7 +15,7 @@ time com ccache 1 # Compression level 1, its enough
 7za a -tzip -v2048m -mx=0 ${rom}_ccache_backup.zip ccache.tar.gz
 
 # Move all parts to our gitlab ccache_repo of for pushing
-mv *.zip.001 /tmp/$rom
+mv *.zip.002 /tmp/$rom
 
 echo "|| Uploading CCACHE ||"
 SECONDS=0

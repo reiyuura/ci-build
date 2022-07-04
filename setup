@@ -7,7 +7,7 @@ username=reiyuura
 gmail=yuiirechi@gmail.com
 
 # enter tag for gh release
-rom=nusa
+rom=xdroid
 
 # rom manifest link & branch
 android_manifest="https://github.com/xdroid-oss/xd_manifest.git -b twelve"
